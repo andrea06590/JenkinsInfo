@@ -13,6 +13,9 @@ jsonResp = {}
 formattedJenkinsObj = [{}]
 formattedJenkinsJobs = [{}]
 
+def printInfo():
+    print("Run jenkins-list.py -c config.yaml -list to see all Jobs")
+    print("Run jenkins-list.py -c config.yaml -info [jobName] to see builds for a specific Job")
 
 # utilisation du serveur ALL (server2 du fichier conf)
 def getAllJobs(server):
@@ -54,17 +57,21 @@ args = parser.parse_args()
 
 # on lis le fichier de conf avant toute chose
 # TODO gestion d'erreur si mauvais fichier ou inexistant sur le fs
-print("Fichier : " + args.filename)
-with open(args.filename, 'r') as stream:
-    try:
-        config = yaml.load(stream)
-        for key in config['SERVERS']:
-            serverList.append(config['SERVERS'][key])
-        print(serverList)
-    except yaml.YAMLError as exception:
-        print(exception)
-
-
+if args.filename is not None:
+    print("Fichier : " + args.filename)
+    with open(args.filename, 'r') as stream:
+        try:
+            config = yaml.load(stream)
+            for key in config['SERVERS']:
+                serverList.append(config['SERVERS'][key])
+            printInfo()
+            print(serverList)
+        except yaml.YAMLError as exception:
+            print(exception)
+else:
+    print('Config file required\n')
+    printInfo()
+        
 # si on requete tous les jobs
 if args.list:
     getAllJobs(serverList[1])
