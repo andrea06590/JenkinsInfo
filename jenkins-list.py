@@ -14,11 +14,13 @@ jsonResp = {}
 formattedJenkinsObj = [{}]
 formattedJenkinsJobs = [{}]
 
+
 def printInfo():
     print("Run jenkins-list.py -c config.yaml -list to see all Jobs")
-    print("Run jenkins-list.py -c config.yaml -info [jobName] to see builds for a specific Job")
+    print("or run jenkins-list.py -c config.yaml -info [jobName]")
 
-def dispatchRequest():        
+
+def dispatchRequest():
     # si on requete tous les jobs
     if args.list:
         getAllJobs(serverList[1])
@@ -26,6 +28,7 @@ def dispatchRequest():
     # si on veut un job en particulier
     if args.jobName:
         getJobInfo(serverList[0], args.jobName)
+
 
 # utilisation du serveur ALL (server2 du fichier conf)
 def getAllJobs(server):
@@ -48,8 +51,11 @@ def getJobInfo(server, jobName):
     resp = requests.get(url)
     jsonResp = json.loads(resp.text)
     for value in jsonResp['builds']:
+        time = value['timestamp']/1000
+        pattern = '%Y-%m-%d %H:%M:%S'
+        formatted = datetime.datetime.fromtimestamp(time).strftime(pattern)
         job = {
-            'time': datetime.datetime.fromtimestamp(value['timestamp']/1000).strftime('%Y-%m-%d %H:%M:%S'),
+            'time': formatted,
             'node': value['url'],
             'status': value['result']
         }
@@ -82,4 +88,3 @@ if args.filename is not None:
 else:
     print('Config file required\n')
     printInfo()
-
