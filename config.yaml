@@ -1,0 +1,3 @@
+SERVERS:
+    server1: 'https://jenkins.mono-project.com/view/All/job/'
+    server2: 'https://jenkins.mono-project.com/api/json'
