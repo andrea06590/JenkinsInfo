@@ -4,6 +4,7 @@ import argparse
 import yaml
 import requests
 import json
+import datetime
 
 # stocke les @ des serveurs en vue d'une autre utilisation
 serverList = []
@@ -16,6 +17,15 @@ formattedJenkinsJobs = [{}]
 def printInfo():
     print("Run jenkins-list.py -c config.yaml -list to see all Jobs")
     print("Run jenkins-list.py -c config.yaml -info [jobName] to see builds for a specific Job")
+
+def dispatchRequest():        
+    # si on requete tous les jobs
+    if args.list:
+        getAllJobs(serverList[1])
+
+    # si on veut un job en particulier
+    if args.jobName:
+        getJobInfo(serverList[0], args.jobName)
 
 # utilisation du serveur ALL (server2 du fichier conf)
 def getAllJobs(server):
@@ -39,7 +49,7 @@ def getJobInfo(server, jobName):
     jsonResp = json.loads(resp.text)
     for value in jsonResp['builds']:
         job = {
-            'time': value['timestamp'],
+            'time': datetime.datetime.fromtimestamp(value['timestamp']/1000).strftime('%Y-%m-%d %H:%M:%S'),
             'node': value['url'],
             'status': value['result']
         }
@@ -65,17 +75,11 @@ if args.filename is not None:
             for key in config['SERVERS']:
                 serverList.append(config['SERVERS'][key])
             printInfo()
+            dispatchRequest()
             print(serverList)
         except yaml.YAMLError as exception:
             print(exception)
 else:
     print('Config file required\n')
     printInfo()
-        
-# si on requete tous les jobs
-if args.list:
-    getAllJobs(serverList[1])
 
-# si on veut un job en particulier
-if args.jobName:
-    getJobInfo(serverList[0], args.jobName)
