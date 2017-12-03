@@ -46,21 +46,35 @@ def getAllJobs(server):
 
 # utilisation de l'url API (server1 du fichier conf) fournie par jenkins
 def getJobInfo(server, jobName):
-    url = server + jobName + '/api/json?tree=builds[url,timestamp,result]'
+    url = server + jobName + '/api/json?tree=builds[fullDisplayName,url,timestamp,result,runs[builtOn]]'
     print('Get job : ' + jobName + ' on server : ' + server + '...')
     resp = requests.get(url)
     jsonResp = json.loads(resp.text)
+
     for value in jsonResp['builds']:
         time = value['timestamp']/1000
         pattern = '%Y-%m-%d %H:%M:%S'
         formatted = datetime.datetime.fromtimestamp(time).strftime(pattern)
-        job = {
-            'time': formatted,
-            'node': value['url'],
-            'status': value['result']
-        }
+        if 'runs' in value:
+            for run in value['runs']:
+                job = {
+                    'time': formatted,
+                    'build url': value['url'],
+                    'status': value['result'],
+                    'name': value['fullDisplayName'],
+                    'node': run['builtOn']
+                }
+                formattedJenkinsJobs.append(job)
+        else:
+            job = {
+                'time': formatted,
+                'build url': value['url'],
+                'status': value['result'],
+                'name': value['fullDisplayName'],
+                'node': 'master'
+            }
+            formattedJenkinsJobs.append(job)
         print(job)
-        formattedJenkinsJobs.append(job)
 
 parser = argparse.ArgumentParser(description="collecte jenkins")
 parser.add_argument("-c", dest="filename", help="config file with servers")
