@@ -36,13 +36,7 @@ def getAllJobs(server):
     resp = requests.get(server)
     jsonResp = json.loads(resp.text)
     for value in jsonResp['jobs']:
-        job = {
-            'jobName': value['name'],
-            'url': value['url']
-        }
-        print("Job Name : " + job['jobName'] + "  =>  Job url : " + job['url'])
-        formattedJenkinsObj.append(job)
-
+        getJobInfo(serverList[0], value['name'])
 
 # utilisation de l'url API (server1 du fichier conf) fournie par jenkins
 def getJobInfo(server, jobName):
@@ -51,30 +45,31 @@ def getJobInfo(server, jobName):
     resp = requests.get(url)
     jsonResp = json.loads(resp.text)
 
-    for value in jsonResp['builds']:
-        time = value['timestamp']/1000
-        pattern = '%Y-%m-%d %H:%M:%S'
-        formatted = datetime.datetime.fromtimestamp(time).strftime(pattern)
-        if 'runs' in value:
-            for run in value['runs']:
+    if 'builds' in jsonResp:
+        for value in jsonResp['builds']:
+            time = value['timestamp']/1000
+            pattern = '%Y-%m-%d %H:%M:%S'
+            formatted = datetime.datetime.fromtimestamp(time).strftime(pattern)
+            if 'runs' in value:
+                for run in value['runs']:
+                    job = {
+                        'time': formatted,
+                        'build url': value['url'],
+                        'status': value['result'],
+                        'name': value['fullDisplayName'],
+                        'node': run['builtOn']
+                    }
+                    formattedJenkinsJobs.append(job)
+            else:
                 job = {
                     'time': formatted,
                     'build url': value['url'],
                     'status': value['result'],
                     'name': value['fullDisplayName'],
-                    'node': run['builtOn']
+                    'node': 'master'
                 }
                 formattedJenkinsJobs.append(job)
-        else:
-            job = {
-                'time': formatted,
-                'build url': value['url'],
-                'status': value['result'],
-                'name': value['fullDisplayName'],
-                'node': 'master'
-            }
-            formattedJenkinsJobs.append(job)
-        print(job)
+            print(job)
 
 parser = argparse.ArgumentParser(description="collecte jenkins")
 parser.add_argument("-c", dest="filename", help="config file with servers")
