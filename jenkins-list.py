@@ -38,9 +38,12 @@ def getAllJobs(server):
     for value in jsonResp['jobs']:
         getJobInfo(serverList[0], value['name'])
 
+
 # utilisation de l'url API (server1 du fichier conf) fournie par jenkins
 def getJobInfo(server, jobName):
-    url = server + jobName + '/api/json?tree=builds[fullDisplayName,url,timestamp,result,runs[builtOn]]'
+    urlPrefix = server + jobName + '/api/json?tree=builds'
+    param = '[fullDisplayName,url,timestamp,result,runs[builtOn]]'
+    url = urlPrefix + param
     print('Get job : ' + jobName + ' on server : ' + server + '...')
     resp = requests.get(url)
     jsonResp = json.loads(resp.text)
